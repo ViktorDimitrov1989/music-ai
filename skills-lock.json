@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "clerk-backend-api": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-backend-api/SKILL.md",
+      "computedHash": "f3204ff593e5c2a9db60380464a79442d97f028c5dc4f8e66f853dc536ad78df"
+    },
+    "clerk-react-patterns": {
+      "source": "clerk/skills",
+      "sourceType": "github",
+      "skillPath": "skills/clerk-react-patterns/SKILL.md",
+      "computedHash": "9bbc28d1825bda0f31a33660b3e339719bc0ad2a30696dfde14ef6b9493371b0"
+    },
+    "cypress-author": {
+      "source": "cypress-io/ai-toolkit",
+      "sourceType": "github",
+      "skillPath": "skills/cypress-author/SKILL.md",
+      "computedHash": "f537b3a2e715270c7600b062bbd35d7035bdcdd0b7ec1134949f391b9d83e103"
+    }
+  }
+}
