@@ -9,7 +9,9 @@
     "cy:run:component": "cypress run --component",
     "cy:open:component": "cypress open --component",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:component": "cypress run --component",
+    "test:component:open": "cypress open --component"
   },
   "dependencies": {
     "react": "^19.2.8",
