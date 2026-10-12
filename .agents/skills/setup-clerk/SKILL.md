@@ -2,6 +2,7 @@
 name: setup-clerk
 description: 'Set up Clerk authentication with the Clerk CLI. Use when installing Clerk, linking a Clerk app, adding authentication to a project, configuring Clerk providers or auth controls, or verifying a Clerk setup.'
 argument-hint: 'Set up Clerk authentication in this project.'
+disable-model-invocation: true
 ---
 
 # Add Clerk Authentication
