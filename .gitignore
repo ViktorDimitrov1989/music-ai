@@ -1,0 +1,6 @@
+node_modules/
+frontend/dist/
+backend/dist/
+frontend/cypress/videos/
+frontend/cypress/screenshots/
+.DS_Store
