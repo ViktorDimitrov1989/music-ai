@@ -45,7 +45,7 @@ In development, Vite proxies `/api` to Express. In production, Express serves th
 ## Clerk and Spotify configuration
 
 1. Create or select a Spotify app, then in the linked Clerk application enable Spotify as a social connection. Configure the Spotify OAuth credentials and the callback URL shown by Clerk.
-2. Request the Spotify scopes `user-read-email` and `user-read-private` so `/api/me` can read the signed-in Spotify profile.
+2. Request the Spotify scopes `user-read-email`, `user-read-private`, and `user-read-recently-played` so `/api/me` can read the signed-in Spotify profile and `/api/recently-played` can load listening activity. If Spotify scopes are changed for an existing connection, users may need to reconnect Spotify.
 3. Ensure the frontend has `VITE_CLERK_PUBLISHABLE_KEY` in `frontend/.env.local`. Clerk CLI initialization may have created this file; do not commit it. Vite only exposes variables prefixed with `VITE_`.
 4. Copy `backend/.env.example` to `backend/.env` and set `CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` from the Clerk Dashboard. Keep the secret key only in the backend environment.
 
@@ -55,7 +55,7 @@ cp backend/.env.example backend/.env
 
 If you need to create the frontend environment file manually, copy `frontend/.env.example` to `frontend/.env.local` and set its publishable key.
 
-The frontend shows Clerk sign-in/sign-up controls and a signed-in user menu. `GET /api/me` returns the Clerk user ID and basic Spotify profile fields; it returns `401` without a signed-in session and `403` if that Clerk user has no Spotify connection.
+The frontend shows Clerk sign-in/sign-up controls and a signed-in user menu. `GET /api/me` returns the Clerk user ID and basic Spotify profile fields; `GET /api/recently-played` returns the user's 50 most recent tracks grouped into day sections in the frontend. Both endpoints return `401` without a signed-in session and `403` if that Clerk user has no Spotify connection. The listening history response includes track names, artists, album artwork URLs, durations, and play times; Spotify access tokens remain on the backend.
 
 ## Requirements
 

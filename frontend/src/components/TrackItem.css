@@ -1,0 +1,77 @@
+.track-item {
+  min-height: 82px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 11px 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.track-item-cover {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 auto;
+  border-radius: 4px;
+  background: #e7d8ce;
+  object-fit: cover;
+}
+
+.track-item-cover-placeholder {
+  display: grid;
+  place-items: center;
+  color: #80576f;
+  font-family: var(--serif);
+  font-size: 28px;
+}
+
+.track-item-details {
+  min-width: 0;
+  flex: 1;
+}
+
+.track-item-name {
+  overflow: hidden;
+  margin: 0;
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-item-artists {
+  overflow: hidden;
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-item-meta {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: end;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.track-item-time {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .track-item {
+    gap: 12px;
+    padding-inline: 10px;
+  }
+
+  .track-item-cover {
+    width: 50px;
+    height: 50px;
+  }
+}

@@ -1,0 +1,79 @@
+.recent-activity {
+  margin-block: 34px 24px;
+}
+
+.recent-tracks-header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 0 2px 17px;
+}
+
+.recent-tracks-header .eyebrow {
+  margin-bottom: 9px;
+}
+
+.recent-tracks-header h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: clamp(27px, 3vw, 36px);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+
+.recent-tracks-count {
+  padding-bottom: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.recent-tracks-day {
+  margin-top: 13px;
+  overflow: hidden;
+  border: 1px solid #e6dcd5;
+  border-radius: 7px;
+  background: #fffdfa;
+}
+
+.recent-tracks-day-heading {
+  margin: 0;
+  padding: 14px 16px 10px;
+  color: var(--plum);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.recent-tracks-items {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent-tracks-items li:last-child .track-item {
+  border-bottom: 0;
+}
+
+.recent-tracks-empty,
+.activity-feedback {
+  margin: 0;
+  padding: 22px;
+  border: 1px solid #e6dcd5;
+  border-radius: 7px;
+  background: #fffdfa;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.activity-feedback[role='alert'] {
+  color: #8b3e3e;
+}
+
+@media (max-width: 700px) {
+  .recent-activity {
+    margin-block: 28px 18px;
+  }
+}

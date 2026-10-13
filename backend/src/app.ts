@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { clerkMiddleware, getAuth } from '@clerk/express'
 import express, { type NextFunction, type Request, type Response } from 'express'
 import {
+  getRecentlyPlayedTracks,
   getSpotifyProfile,
   SpotifyApiError,
   SpotifyConnectionRequiredError,
@@ -48,6 +49,38 @@ app.get('/api/me', async (request, response, next) => {
     }
 
     if (error instanceof SpotifyApiError) {
+      console.error(`Spotify API returned HTTP ${error.statusCode}`)
+      response.status(502).json({ error: 'spotify_api_error' })
+      return
+    }
+
+    next(error)
+  }
+})
+
+app.get('/api/recently-played', async (request, response, next) => {
+  const { isAuthenticated, userId } = getAuth(request)
+
+  if (!isAuthenticated || !userId) {
+    response.status(401).json({ error: 'unauthorized' })
+    return
+  }
+
+  try {
+    const tracks = await getRecentlyPlayedTracks(userId)
+    response.json({ tracks })
+  } catch (error) {
+    if (error instanceof SpotifyConnectionRequiredError) {
+      response.status(403).json({ error: 'spotify_connection_required' })
+      return
+    }
+
+    if (error instanceof SpotifyApiError) {
+      if (error.statusCode === 403) {
+        response.status(403).json({ error: 'spotify_scope_required' })
+        return
+      }
+
       console.error(`Spotify API returned HTTP ${error.statusCode}`)
       response.status(502).json({ error: 'spotify_api_error' })
       return

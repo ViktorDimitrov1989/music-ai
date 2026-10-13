@@ -6,6 +6,8 @@ import {
   useAuth,
 } from '@clerk/react'
 import { useEffect, useState } from 'react'
+import RecentTracksList from './components/RecentTracksList'
+import type { RecentTrack } from './types/recent-track'
 import './App.css'
 
 interface SpotifyProfile {
@@ -29,11 +31,19 @@ type ProfileState =
   | { status: 'loaded'; profile: SpotifyProfile }
   | { status: 'signed-out' }
 
+type RecentTracksState =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'loaded'; tracks: RecentTrack[] }
+  | { status: 'signed-out' }
+
 function App() {
   const { isLoaded, isSignedIn } = useAuth()
   const [profileState, setProfileState] = useState<ProfileState>({
     status: 'loading',
   })
+  const [recentTracksState, setRecentTracksState] =
+    useState<RecentTracksState>({ status: 'loading' })
 
   useEffect(() => {
     if (!isLoaded) {
@@ -79,6 +89,58 @@ function App() {
             error instanceof Error
               ? error.message
               : 'Could not load your Spotify profile.',
+        })
+      })
+
+    return () => controller.abort()
+  }, [isLoaded, isSignedIn])
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return
+    }
+
+    if (!isSignedIn) {
+      setRecentTracksState({ status: 'signed-out' })
+      return
+    }
+
+    const controller = new AbortController()
+    setRecentTracksState({ status: 'loading' })
+
+    void fetch('/api/recently-played', {
+      credentials: 'same-origin',
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const payload: unknown = await response.json()
+
+        if (!response.ok) {
+          throw new Error(getRecentTracksApiErrorMessage(payload))
+        }
+
+        if (!isRecentTracksResponse(payload)) {
+          throw new Error(
+            'The backend returned an invalid listening history response.',
+          )
+        }
+
+        return payload.tracks
+      })
+      .then((tracks) => {
+        setRecentTracksState({ status: 'loaded', tracks })
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) {
+          return
+        }
+
+        setRecentTracksState({
+          status: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Could not load your listening history.',
         })
       })
 
@@ -196,6 +258,27 @@ function App() {
         </div>
       </section>
 
+      {isLoaded && isSignedIn ? (
+        <section
+          className="recent-activity"
+          aria-label="Recent listening"
+        >
+          {recentTracksState.status === 'loading' ? (
+            <p className="activity-feedback" role="status">
+              Loading your recent listening…
+            </p>
+          ) : null}
+          {recentTracksState.status === 'error' ? (
+            <p className="activity-feedback" role="alert">
+              {recentTracksState.message}
+            </p>
+          ) : null}
+          {recentTracksState.status === 'loaded' ? (
+            <RecentTracksList tracks={recentTracksState.tracks} />
+          ) : null}
+        </section>
+      ) : null}
+
       <footer className="footer">
         <span>Made for the songs that stay with you.</span>
         <span>Aftertone · A personal music diary</span>
@@ -221,6 +304,40 @@ function getApiErrorMessage(payload: unknown): string {
   }
 
   return 'Could not load your Spotify profile. Please try again.'
+}
+
+function getRecentTracksApiErrorMessage(payload: unknown): string {
+  if (isRecord(payload) && payload.error === 'spotify_connection_required') {
+    return 'This account is not connected to Spotify. Sign in with Spotify to continue.'
+  }
+
+  if (isRecord(payload) && payload.error === 'spotify_scope_required') {
+    return 'Spotify listening-history access is missing. Enable user-read-recently-played, then reconnect Spotify.'
+  }
+
+  return 'Could not load your listening history. Please try again.'
+}
+
+function isRecentTracksResponse(
+  value: unknown,
+): value is { tracks: RecentTrack[] } {
+  return (
+    isRecord(value) &&
+    Array.isArray(value.tracks) &&
+    value.tracks.every(
+      (track) =>
+        isRecord(track) &&
+        typeof track.id === 'string' &&
+        typeof track.name === 'string' &&
+        Array.isArray(track.artists) &&
+        track.artists.every((artist) => typeof artist === 'string') &&
+        typeof track.durationMs === 'number' &&
+        (typeof track.albumImageUrl === 'string' ||
+          track.albumImageUrl === null) &&
+        typeof track.playedAt === 'string' &&
+        !Number.isNaN(Date.parse(track.playedAt)),
+    )
+  )
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
