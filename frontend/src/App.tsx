@@ -1,6 +1,90 @@
+import {
+  Show,
+  SignInButton,
+  SignUpButton,
+  UserButton,
+  useAuth,
+} from '@clerk/react'
+import { useEffect, useState } from 'react'
 import './App.css'
 
+interface SpotifyProfile {
+  id: string
+  displayName: string | null
+  email: string | null
+  country: string | null
+  product: string | null
+  imageUrl: string | null
+  profileUrl: string | null
+}
+
+interface MeResponse {
+  user: { clerkId: string }
+  spotify: SpotifyProfile
+}
+
+type ProfileState =
+  | { status: 'loading' }
+  | { status: 'error'; message: string }
+  | { status: 'loaded'; profile: SpotifyProfile }
+  | { status: 'signed-out' }
+
 function App() {
+  const { isLoaded, isSignedIn } = useAuth()
+  const [profileState, setProfileState] = useState<ProfileState>({
+    status: 'loading',
+  })
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return
+    }
+
+    if (!isSignedIn) {
+      setProfileState({ status: 'signed-out' })
+      return
+    }
+
+    const controller = new AbortController()
+    setProfileState({ status: 'loading' })
+
+    void fetch('/api/me', {
+      credentials: 'same-origin',
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        const payload: unknown = await response.json()
+
+        if (!response.ok) {
+          throw new Error(getApiErrorMessage(payload))
+        }
+
+        if (!isMeResponse(payload)) {
+          throw new Error('The backend returned an invalid profile response.')
+        }
+
+        return payload
+      })
+      .then((payload) => {
+        setProfileState({ status: 'loaded', profile: payload.spotify })
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) {
+          return
+        }
+
+        setProfileState({
+          status: 'error',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Could not load your Spotify profile.',
+        })
+      })
+
+    return () => controller.abort()
+  }, [isLoaded, isSignedIn])
+
   return (
     <main className="page-shell">
       <header className="topbar">
@@ -12,7 +96,26 @@ function App() {
           </span>
           aftertone
         </a>
-        <span className="topbar-note">A music diary</span>
+        <div className="topbar-actions">
+          <span className="topbar-note">A music diary</span>
+          <nav className="auth-controls" aria-label="Account">
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button className="auth-button auth-button-primary" type="button">
+                  Sign in with Spotify
+                </button>
+              </SignInButton>
+              <SignUpButton mode="modal">
+                <button className="auth-button auth-button-secondary" type="button">
+                  Create account
+                </button>
+              </SignUpButton>
+            </Show>
+            <Show when="signed-in">
+              <UserButton />
+            </Show>
+          </nav>
+        </div>
       </header>
 
       <section className="hero" aria-labelledby="hero-title">
@@ -54,7 +157,42 @@ function App() {
         </div>
         <div className="diary-card-note">
           <span className="note-dot" aria-hidden="true" />
-          <span>Spotify connection is coming soon.</span>
+          {profileState.status === 'loading' && isSignedIn ? (
+            <span role="status">Loading your Spotify profile…</span>
+          ) : null}
+          {profileState.status === 'error' ? (
+            <span role="alert">{profileState.message}</span>
+          ) : null}
+          {profileState.status === 'loaded' ? (
+            <span className="spotify-profile">
+              {profileState.profile.imageUrl ? (
+                <img
+                  className="spotify-avatar"
+                  src={profileState.profile.imageUrl}
+                  alt=""
+                />
+              ) : null}
+              <span>
+                Connected as{' '}
+                {profileState.profile.displayName ??
+                  profileState.profile.email ??
+                  profileState.profile.id}
+              </span>
+              {profileState.profile.profileUrl ? (
+                <a
+                  className="spotify-profile-link"
+                  href={profileState.profile.profileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Spotify profile
+                </a>
+              ) : null}
+            </span>
+          ) : null}
+          {profileState.status === 'signed-out' ? (
+            <span>Sign in with Spotify to start your diary.</span>
+          ) : null}
         </div>
       </section>
 
@@ -64,6 +202,29 @@ function App() {
       </footer>
     </main>
   )
+}
+
+function isMeResponse(value: unknown): value is MeResponse {
+  if (!isRecord(value) || !isRecord(value.user) || !isRecord(value.spotify)) {
+    return false
+  }
+
+  return (
+    typeof value.user.clerkId === 'string' &&
+    typeof value.spotify.id === 'string'
+  )
+}
+
+function getApiErrorMessage(payload: unknown): string {
+  if (isRecord(payload) && payload.error === 'spotify_connection_required') {
+    return 'This account is not connected to Spotify. Sign in with Spotify to continue.'
+  }
+
+  return 'Could not load your Spotify profile. Please try again.'
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
 }
 
 export default App

@@ -4,3 +4,6 @@ backend/dist/
 frontend/cypress/videos/
 frontend/cypress/screenshots/
 .DS_Store
+.env
+.env.*
+!.env.example

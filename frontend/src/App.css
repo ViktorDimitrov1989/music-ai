@@ -11,6 +11,60 @@
   border-bottom: 1px solid var(--line);
 }
 
+.topbar-actions,
+.auth-controls {
+  display: flex;
+  align-items: center;
+}
+
+.topbar-actions {
+  gap: 24px;
+}
+
+.auth-controls {
+  gap: 9px;
+}
+
+.auth-button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 650;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.auth-button-primary {
+  background: var(--plum);
+  color: #fffaf7;
+}
+
+.auth-button-primary:hover {
+  background: #69465b;
+}
+
+.auth-button-secondary {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.auth-button-secondary:hover {
+  border-color: var(--plum);
+  color: var(--plum);
+}
+
+.auth-button:focus-visible,
+.spotify-profile-link:focus-visible {
+  outline: 2px solid var(--plum);
+  outline-offset: 3px;
+}
+
 .wordmark {
   display: inline-flex;
   align-items: center;
@@ -242,6 +296,26 @@
   font-size: 11px;
 }
 
+.spotify-profile {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.spotify-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.spotify-profile-link {
+  color: inherit;
+  font-weight: 650;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+
 .note-dot {
   width: 6px;
   height: 6px;
@@ -265,7 +339,33 @@
   }
 
   .topbar {
-    height: 72px;
+    min-height: 72px;
+    height: auto;
+    flex-wrap: wrap;
+    row-gap: 12px;
+    padding-block: 14px;
+  }
+
+  .topbar-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .topbar-note {
+    display: none;
+  }
+
+  .auth-controls {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+
+  .auth-button {
+    min-height: 36px;
+    padding-inline: 10px;
+    font-size: 10px;
   }
 
   .hero {

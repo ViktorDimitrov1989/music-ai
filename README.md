@@ -2,7 +2,7 @@
 
 Aftertone is a personal music diary: a place to explore listening history and connect songs with the days, seasons, and life moments around them.
 
-This initial scaffold has a React home page and an Express health API. Spotify sign-in, listening-history import, and diary storage are not implemented yet.
+The app uses Clerk for Spotify sign-in. The React frontend sends same-origin requests to the Express backend, which validates the Clerk session and uses the user's Spotify OAuth token server-side.
 
 ## Project layout
 
@@ -12,6 +12,50 @@ frontend/  React application built with Vite
 ```
 
 Each project has its own `package.json`, dependencies, and commands.
+
+## Authentication architecture
+
+```mermaid
+flowchart LR
+  Browser["Browser"]
+
+  subgraph AppOrigin["Application origin"]
+    Frontend["React + Vite frontend"]
+    Backend["Express API"]
+  end
+
+  Clerk["Clerk"]
+  Spotify["Spotify Web API"]
+
+  Browser -->|"Sign in / sign up"| Frontend
+  Frontend -->|"Clerk OAuth redirect"| Clerk
+  Clerk <-->|"Spotify OAuth consent and callback"| Spotify
+  Clerk -->|"Clerk session cookie"| Browser
+  Browser -->|"GET /api/me + session cookie"| Frontend
+  Frontend -->|"/api proxy in development"| Backend
+  Backend -->|"Validate session cookie"| Clerk
+  Backend -->|"Get user's Spotify OAuth token"| Clerk
+  Backend -->|"Bearer token (server-side only)"| Spotify
+  Spotify -->|"Basic Spotify profile"| Backend
+  Backend -->|"Safe profile JSON; no access token"| Frontend
+```
+
+In development, Vite proxies `/api` to Express. In production, Express serves the built frontend and API from the same origin. The Spotify access token stays on the backend and is never returned to browser code.
+
+## Clerk and Spotify configuration
+
+1. Create or select a Spotify app, then in the linked Clerk application enable Spotify as a social connection. Configure the Spotify OAuth credentials and the callback URL shown by Clerk.
+2. Request the Spotify scopes `user-read-email` and `user-read-private` so `/api/me` can read the signed-in Spotify profile.
+3. Ensure the frontend has `VITE_CLERK_PUBLISHABLE_KEY` in `frontend/.env.local`. Clerk CLI initialization may have created this file; do not commit it. Vite only exposes variables prefixed with `VITE_`.
+4. Copy `backend/.env.example` to `backend/.env` and set `CLERK_PUBLISHABLE_KEY` and `CLERK_SECRET_KEY` from the Clerk Dashboard. Keep the secret key only in the backend environment.
+
+```sh
+cp backend/.env.example backend/.env
+```
+
+If you need to create the frontend environment file manually, copy `frontend/.env.example` to `frontend/.env.local` and set its publishable key.
+
+The frontend shows Clerk sign-in/sign-up controls and a signed-in user menu. `GET /api/me` returns the Clerk user ID and basic Spotify profile fields; it returns `401` without a signed-in session and `403` if that Clerk user has no Spotify connection.
 
 ## Requirements
 
@@ -31,7 +75,7 @@ npm install
 
 ## Run locally
 
-Open two terminals from the repository root.
+Configure the environment variables above, then open two terminals from the repository root.
 
 Terminal 1 — backend:
 
@@ -55,7 +99,7 @@ Check backend health:
 curl http://localhost:3030/api/health
 ```
 
-The endpoint returns `{"status":"ok"}`. The same endpoint is available through the frontend proxy at <http://localhost:8080/api/health>.
+The endpoint returns `{"status":"ok"}`. The same endpoint is available through the frontend proxy at <http://localhost:8080/api/health>. After signing in from the frontend with Spotify, the app calls `/api/me` through that same-origin proxy and displays the Spotify profile returned by the backend.
 
 ## Tests and builds
 
