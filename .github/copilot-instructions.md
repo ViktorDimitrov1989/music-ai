@@ -1,3 +1,7 @@
+## Response style
+
+For every user prompt in this workspace, read and follow the Caveman skill at `~/.copilot/skills/caveman/SKILL.md`. Stay in Caveman mode until the user says `stop caveman` or `normal mode`. Preserve all technical details, commands, paths, and errors exactly. Follow the skill's exceptions for security warnings, irreversible actions, questions, and content persisted outside chat.
+
 ## Cross-stack delegation
 
 When a task requires implementation in both `backend/` and `frontend/`, the main agent coordinates the work:
