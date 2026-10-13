@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress'
+import { initPlugin } from '@pixsame/cypress-plugin-visual-regression-diff/plugins'
 
 export default defineConfig({
   component: {
@@ -8,5 +9,8 @@ export default defineConfig({
     },
     specPattern: 'cypress/component/**/*.cy.{ts,tsx}',
     supportFile: 'cypress/support/component.ts',
+    setupNodeEvents(on, config) {
+      initPlugin(on, config)
+    },
   },
 })

@@ -12,5 +12,6 @@ describe('music diary home page', () => {
     cy.get('h1').should('contain.text', 'Some days have')
     cy.get('h1').should('contain.text', 'soundtrack.')
     cy.contains('h2', 'Your listening story starts here.')
+    cy.get('body').matchImage()
   })
 })

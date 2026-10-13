@@ -1,4 +1,5 @@
 import { mount } from 'cypress/react'
+import '@pixsame/cypress-plugin-visual-regression-diff'
 
 declare global {
   namespace Cypress {
